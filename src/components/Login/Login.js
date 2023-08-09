@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useReducer} from 'react';
+import React, { useState, useEffect, useReducer, useContext} from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
+import AuthContext from '../../store/auth-context';
 
 const emailReducer = (state , action) => {
   if (action.type === 'USER_INPUT'){
@@ -43,6 +44,8 @@ const Login = (props) => {
     isValid: null
   });
 
+  const authCtx = useContext(AuthContext);
+
   useEffect(() => {
     console.log('Effect Running!');
 
@@ -51,26 +54,29 @@ const Login = (props) => {
     }
   }, []);
   
-  
-  // useEffect(() => {
-  //   const identifier = setTimeout(() => {
-  //     setFormIsValid(
-  //       enteredEmail.includes('@') && enteredPassword.trim().length > 6
-  //     );
-  //   }, 500);
+  const {isValid: emailIsValid} = emailState;
+  const {isValid: passwordIsValid} = passwordState;
 
-  //   return() => {
-  //     console.log('Cleanup');
-  //     clearTimeout(identifier);
-  //   };
-  // }, [enteredEmail, enteredPassword]);
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      console.log('Checking form validity');
+      setFormIsValid(
+        emailIsValid && passwordIsValid
+      );
+    }, 500);
+
+    return() => {
+      console.log('Cleanup');
+      clearTimeout(identifier);
+    };
+  }, [emailIsValid, passwordIsValid]);
 
   const emailChangeHandler = (event) => {
     dispatchEmail({type: 'USER_INPUT', val: event.target.value});
 
-    setFormIsValid(
-      event.target.value.includes('@') && passwordState.isValid
-          );
+    // setFormIsValid(
+    //   event.target.value.includes('@') && passwordState.isValid
+    // );
   };
 
   const passwordChangeHandler = (event) => {
@@ -94,7 +100,7 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, passwordState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
